@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id          Int       @id @default(autoincrement())
+  email       String
+  nrp         String
+  name        String
+  role        UserRole  @default(OPERATOR)
+  password    String
+  salt        String
+  photo       Bytes
+  active      Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  modified_at DateTime?
+  deleted_at  DateTime?
+}
+
+model enrollments {
+  id                    Int       @id @default(autoincrement())
+  identity_number       String
+  name                  String
+  gender                Gender?
+  photo                 Bytes
+  driver_license_number String?
+  passport_number       String?
+  created_at            DateTime  @default(now())
+  modified_at           DateTime?
+  deleted_at            DateTime?
+}
+
+model api_hit_logs {
+  id           Int      @id @default(autoincrement())
+  api_key_id   Int
+  api_accessed ApiType
+  created_at   DateTime @default(now())
+
+  api_key api_keys @relation(fields: [api_key_id], references: [id], onUpdate: Restrict, map: "api_hit_logs_ibfk_1")
+}
+
+model api_keys {
+  id          Int       @id @default(autoincrement())
+  name        String
+  key         String    @unique(map: "key")
+  active      Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  modified_at DateTime?
+  deleted_at  DateTime?
+
+  api_hit_logs   api_hit_logs[]
+  api_key_scopes api_key_scopes[]
+}
+
+model api_key_scopes {
+  id         Int      @id @default(autoincrement())
+  api_key_id Int
+  scope      ApiType
+  created_at DateTime @default(now())
+
+  api_key api_keys @relation(fields: [api_key_id], references: [id], onUpdate: Restrict, map: "api_key_scopes_ibfk_1")
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ApiType {
+  DIVTIK
+  SIM
+  IMIGRASI
+  DPO_BARESKRIM
+  INTERPOL
+  FACE_ENROLLMENT
+  FACE_MATCH
+  FACE_DETECTION
+}
