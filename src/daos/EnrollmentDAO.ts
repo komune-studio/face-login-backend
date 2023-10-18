@@ -99,9 +99,8 @@ async function edit(id: string , object: any) {
     let result = await model.update({
         data: {
             ...object,
-            modified_at: new Date()
         },
-        where: {id}
+        where: {id : id}
     })
     return result
 }
