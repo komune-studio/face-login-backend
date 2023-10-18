@@ -270,6 +270,10 @@ export async function face_login(req: Request, res: Response, next: NextFunction
     try{
         let body = {...req.body}
 
+        if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
+        if(!body.threshold) return next(new BadRequestError("threshold is missing!", "THRESHOLD_MISSING"))
+
+
         let headers = {
             "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
             "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
