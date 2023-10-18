@@ -3,7 +3,9 @@ import * as controller from "../../controllers/enrollmentController"
 import auth from "../../middlewares/authMiddleware";
 
 export default (app: Express) =>{
-    app.route("/v1/enrollments").get(auth.user, controller.getWithPagination)
+    app.route("/v1/enrollments").get(controller.getAll)
+
+    app.route("/v1/enrollments/pagination").get(controller.getWithPagination)
 
     app.route("/v1/enrollment/create").post(controller.create)
 

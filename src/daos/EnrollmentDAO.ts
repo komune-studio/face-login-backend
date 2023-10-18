@@ -94,6 +94,10 @@ async function getById(id: string) {
     return rows
 }
 
+async function getAll() {
+    return await model.findMany()
+}
+
 
 async function edit(id: string , object: any) {
     let result = await model.update({
@@ -144,5 +148,6 @@ export default {
     getThisYearCount_GroupedBy_month,
     create,
     edit,
+    getAll
 }
 

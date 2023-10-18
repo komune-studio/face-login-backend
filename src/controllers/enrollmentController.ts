@@ -132,6 +132,16 @@ function paginate(array: [], page_size: number, page_number: number) {
     return array.slice((page_number - 1) * page_size, page_number * page_size);
 }
 
+export async function getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+        let getAll = await EnrollmentDAO.getAll()
+        res.send(getAll)
+    } catch (e) {
+        return next(e);
+    }
+}
+
+
 export async function getWithPagination(req: Request, res: Response, next: NextFunction) {
     try {
         let{limit, page, search} = req.query
@@ -142,15 +152,14 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
         // @ts-ignore
         let countResult = await EnrollmentDAO.getCount(search);
 
-        // let obj = {
-        //     enrollments: result.map(data => ({...data, photo: Buffer.from(data.photo).toString('base64')})),
-        //     limit: toInteger(limit),
-        //     current_page: toInteger(page),
-        //     total_data: countResult._count.id,
-        //     total_page: Math.ceil(countResult._count.id/toInteger(limit))
-        // }
+        let obj = {
+            enrollments: result.map((data: { image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>; }) => ({...data, image: Buffer.from(data.image).toString('base64')})),
+            limit: toInteger(limit),
+            current_page: toInteger(page),
+            total_data: countResult._count.id,
+            total_page: Math.ceil(countResult._count.id/toInteger(limit))
+        }
 
-        let obj = {}
         res.send(obj)
     } catch (e) {
         return next(e);
