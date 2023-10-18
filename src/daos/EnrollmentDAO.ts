@@ -125,6 +125,15 @@ async function getThisYearCount_GroupedBy_month() {
     return rows
 }
 
+async function _delete (id: string)  {
+    let result = await model.delete({
+        where: {
+            id: id
+        }
+    })
+    return result
+}
+
 
 export default {
     format,
@@ -132,6 +141,7 @@ export default {
     formatEdit,
     getRequired,
     getById,
+    _delete,
     getThisYearCount_GroupedBy_month,
     create,
     edit,

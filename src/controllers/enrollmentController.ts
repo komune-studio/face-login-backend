@@ -178,6 +178,30 @@ export async function create(req: Request, res: Response, next: NextFunction) {
             result.returned = true
             return res.send({succes: true})
         }
+
+        res.send(result)
+    }catch (e) {
+        e = new InternalServerError(e)
+        next(e)
+    }
+}
+
+export async function _delete(req: Request, res: Response, next: NextFunction) {
+    try{
+        let body = req.body
+        let headers = {
+            "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
+            "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
+            "accept": "application/json",
+            "content-type": 'application/json'
+        }
+        let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${body.subject_id}`, headers, body, 'DELETE')
+        if(result.message === "Request Success"){
+            let enrollment = await enrollmentDAO._delete(body.id)
+            return res.send({succes: true})
+        }
+
+        return res.send(result)
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
