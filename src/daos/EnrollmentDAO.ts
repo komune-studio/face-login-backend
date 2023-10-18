@@ -137,8 +137,26 @@ async function _delete (id: string)  {
     return result
 }
 
+async function getCount(search: string) {
+    return model.aggregate({
+        _count: {
+            id: true
+        },
+        where: {
+            OR: [
+                {
+                    id: {
+                        contains: search,
+                    }
+                }
+            ]
+        }
+    });
+}
+
 
 export default {
+    getCount,
     format,
     formatCreate,
     formatEdit,
