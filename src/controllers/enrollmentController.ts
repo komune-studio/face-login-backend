@@ -299,7 +299,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
             result.returned = true
             return res.send({succes: true, from_verihub: result})
         }
-
+//
         res.send({from_verihub: result})
     }catch (e) {
         e = new InternalServerError(e)
