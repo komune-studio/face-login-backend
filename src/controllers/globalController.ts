@@ -23,14 +23,14 @@ export async function getDashboardSummary(req: Request, res: Response, next: Nex
         let success_hits = await ApiHitLogDAO.getCount_GroupedBy_api_accessed()
         let hit_per_month = await ApiHitLogDAO.getThisYearCount_GroupedBy_api_accessed()
         let enrollment_per_month = await EnrollmentDAO.getThisYearCount_GroupedBy_month()
-        let total_enrollment = await EnrollmentDAO.getCount("")
+        //let total_enrollment = await EnrollmentDAO.getCount("")
 
         return res.send({
             total_hit,
             success_hits,
             hit_per_month,
             enrollment_per_month,
-            total_enrollment
+            //total_enrollment
         })
 
     } catch (e) {

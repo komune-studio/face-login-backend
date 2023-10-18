@@ -3,7 +3,7 @@ import {enrollments as Enrollment, Gender} from "@prisma/client";
 import hidash from "../utils/hidash";
 import {Mapped, OptionalKeys, RequiredKeys} from "../utils/types";
 
-const model = prisma.enrollments
+const model = prisma.enrolled_ids
 
 export type Required = Omit<RequiredKeys<Enrollment>, 'id' | 'created_at' | 'active'>
 export type Optional = Omit<OptionalKeys<Enrollment>, 'modified_at'>
@@ -86,56 +86,8 @@ function getSingle(row: any): Enrollment | null {
     return format(row)
 }
 
-async function getAll(page: number, limit: number, search: string) {
-    return await model.findMany({
-        skip: limit * page,
-        take: limit,
-        where: {
-            deleted_at: null,
-            OR: [
-                {
-                    name: {
-                        contains: search,
-                        mode: 'insensitive'
-                    }
-                },
-                {
-                    identity_number: {
-                        contains: search,
-                        mode: 'insensitive'
-                    }
-                }
-            ]
-        }
-    })
-}
 
-async function getCount(search: string) {
-    return await model.aggregate({
-        _count: {
-            id: true
-        },
-        where: {
-            deleted_at: null,
-            OR: [
-                {
-                    name: {
-                        contains: search,
-                        mode: 'insensitive'
-                    }
-                },
-                {
-                    identity_number: {
-                        contains: search,
-                        mode: 'insensitive'
-                    }
-                }
-            ]
-        }
-    })
-}
-
-async function getById(id: number) {
+async function getById(id: string) {
     let rows: any = await model.findUnique({
         where: {id}
     })
@@ -143,14 +95,7 @@ async function getById(id: number) {
 }
 
 
-async function getByIdentityNumber(identity_number: string) {
-    let rows: any = await model.findMany({
-        where: {identity_number, deleted_at: null}
-    })
-    return rows
-}
-
-async function edit(id: number, object: any) {
+async function edit(id: string , object: any) {
     let result = await model.update({
         data: {
             ...object,
@@ -187,11 +132,8 @@ export default {
     formatEdit,
     getRequired,
     getById,
-    getAll,
-    getByIdentityNumber,
     getThisYearCount_GroupedBy_month,
     create,
     edit,
-    getCount
 }
 
