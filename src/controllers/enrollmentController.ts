@@ -196,9 +196,9 @@ export async function create(req: Request, res: Response, next: NextFunction) {
                 image: new Buffer(body.image, 'base64')
             })
             result.returned = true
-            return res.send({success: true, from_verihub: result})
+            return res.send({success: true, result: result})
         }
-        return res.send({from_verihub: result})
+        return res.send({result: result})
 
         res.send(result)
     }catch (e) {
@@ -229,10 +229,10 @@ export async function _delete(req: Request, res: Response, next: NextFunction) {
         let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${body.subject_id}`, headers, body, 'DELETE')
         if(result.timestamp){
             let enrollment = await enrollmentDAO._delete(body.subject_id)
-            return res.send({success: true, from_verihub: result})
+            return res.send({success: true, result: result})
         }
 
-        return res.send({faulty_delete: true, from_verihub: result, message: "Enrollment was not deleted in database!"})
+        return res.send({faulty_delete: true, result: result, message: "Enrollment was not deleted in database!"})
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
@@ -266,10 +266,10 @@ export async function update(req: Request, res: Response, next: NextFunction) {
         if(result.message === "Request Success"){
             let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64')})
             result.returned = true
-            return res.send({success: true, from_verihub: result})
+            return res.send({success: true, result: result})
         }
 
-        res.send({from_verihub: result})
+        res.send({result: result})
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
@@ -297,10 +297,10 @@ export async function face_login(req: Request, res: Response, next: NextFunction
         if(result.message === "Face search is successful!"){
             let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64')})
             result.returned = true
-            return res.send({success: true, from_verihub: result})
+            return res.send({success: true, result: result})
         }
 //
-        res.send({from_verihub: result})
+        res.send({result: result})
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
