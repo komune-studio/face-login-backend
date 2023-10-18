@@ -233,6 +233,17 @@ export async function update(req: Request, res: Response, next: NextFunction) {
     try{
         let body = req.body
 
+        if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
+        if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+
+        let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
+        if(!checkIfExist){
+            return res.send({
+                success: false,
+                message: 'Enrollment not found!'
+            })
+        }
+
         let headers = {
             "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
             "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
