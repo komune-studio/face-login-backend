@@ -11,6 +11,8 @@ export default (app: Express) =>{
 
     app.route("/v1/enrollment/update_image").put(controller.update)
 
+    app.route("/v1/enrollment/face-login").post(controller.face_login)
+
     app.route("/v1/enrollment/create/korlantas").post(auth.api_key, auth.api_key_scope["FACE_ENROLLMENT"], controller.create)
 
     //app.route("/v1/enrollment/face_match").post(auth.api_key, auth.api_key_scope["FACE_MATCH"], controller.faceMatch)
