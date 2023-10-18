@@ -15,6 +15,8 @@ import enrollmentDAO from "../daos/EnrollmentDAO";
 // let url = `http://${process.env.FREMISN_HOST}:${process.env.FREMISN_PORT}`
 
 let url = `http://localhost:4005`
+let verihub_api_key = process.env.VERIHUB_API_KEY
+let verihub_app_id = process.env.VERIHUB_APP_ID
 
 async function sendMessage(url: string, body: {}, method: string) {
     try {
@@ -182,8 +184,8 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         }
 
         let headers = {
-            "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
-            "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
+            "API-Key": verihub_api_key,
+            "App-ID": verihub_app_id,
             "accept": "application/json",
             "content-type": 'application/json'
         }
@@ -221,15 +223,15 @@ export async function _delete(req: Request, res: Response, next: NextFunction) {
         }
 
         let headers = {
-            "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
-            "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
+            "API-Key": verihub_api_key,
+            "App-ID": verihub_app_id,
             "accept": "application/json",
             "content-type": 'application/json'
         }
         let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${body.subject_id}`, headers, body, 'DELETE')
         if(result.timestamp){
             let enrollment = await enrollmentDAO._delete(body.subject_id)
-            return res.send({success: true, result: result})
+            return res.send({result: result})
         }
 
         return res.send({faulty_delete: true, result: result, message: "Enrollment was not deleted in database!"})
@@ -255,8 +257,8 @@ export async function update(req: Request, res: Response, next: NextFunction) {
         }
 
         let headers = {
-            "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
-            "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
+            "API-Key": verihub_api_key,
+            "App-ID": verihub_app_id,
             "accept": "application/json",
             "content-type": 'application/json'
         }
@@ -280,13 +282,15 @@ export async function face_login(req: Request, res: Response, next: NextFunction
     try{
         let body = {...req.body}
 
+
+
         if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
         if(!body.threshold) return next(new BadRequestError("threshold is missing!", "THRESHOLD_MISSING"))
 
 
         let headers = {
-            "API-Key": "x2dZ2f/f3e3khkQ/dEVMk/AqRrDjINaN",
-            "App-ID": "1fc9721c-e57c-4db3-bff6-7848569bd976",
+            "API-Key": verihub_api_key,
+            "App-ID": verihub_app_id,
             "accept": "application/json",
             "content-type": 'application/json'
         }
@@ -294,13 +298,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/search', headers, body, 'POST')
         console.log(result)
 
-        if(result.message === "Face search is successful!"){
-            let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64')})
-            result.returned = true
-            return res.send({success: true, result: result})
-        }
-//
-        res.send({result: result})
+        res.send({success: result.matches.length > 0 ? true : false, result: result})
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
