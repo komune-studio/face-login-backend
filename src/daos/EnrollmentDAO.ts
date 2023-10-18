@@ -89,7 +89,7 @@ function getSingle(row: any): Enrollment | null {
 
 async function getById(id: string) {
     let rows: any = await model.findUnique({
-        where: {id}
+        where: {id: id}
     })
     return rows
 }
