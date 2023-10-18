@@ -196,7 +196,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
                 image: new Buffer(body.image, 'base64')
             })
             result.returned = true
-            return res.send({succes: true, from_verihub: result})
+            return res.send({success: true, from_verihub: result})
         }
         return res.send({from_verihub: result})
 
@@ -297,7 +297,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
         if(result.message === "Face search is successful!"){
             let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64')})
             result.returned = true
-            return res.send({succes: true, from_verihub: result})
+            return res.send({success: true, from_verihub: result})
         }
 //
         res.send({from_verihub: result})
