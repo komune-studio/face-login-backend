@@ -155,7 +155,7 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
         let countResult = await EnrollmentDAO.getCount(search);
 
         let obj = {
-            enrollments: result.map((data: { image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>; }) => ({...data, image: Buffer.from(data.image).toString('base64')})),
+            enrollments: result.map((data: { image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>; }) => ({...data, image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')})),
             limit: toInteger(limit),
             current_page: toInteger(page),
             total_data: countResult._count.id,
@@ -211,7 +211,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
 export async function _delete(req: Request, res: Response, next: NextFunction) {
     try{
-        let body = req.body
+        let body = req.params
         if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
 
         let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
@@ -298,7 +298,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/search', headers, body, 'POST')
         console.log(result)
 
-        res.send({success: result.matches.length > 0 ? true : false, result: result})
+        res.send({success: result.matches && result.matches.length > 0 ? true : false, result: result})
     }catch (e) {
         e = new InternalServerError(e)
         next(e)

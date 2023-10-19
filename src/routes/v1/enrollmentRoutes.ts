@@ -3,13 +3,11 @@ import * as controller from "../../controllers/enrollmentController"
 import auth from "../../middlewares/authMiddleware";
 
 export default (app: Express) =>{
-    app.route("/v1/enrollments").get(controller.getAll)
-
-    app.route("/v1/enrollments/pagination").get(controller.getWithPagination)
+    app.route("/v1/enrollments").get(controller.getWithPagination)
 
     app.route("/v1/enrollment/create").post(controller.create)
 
-    app.route("/v1/enrollment/delete").delete(controller._delete)
+    app.route("/v1/enrollment/delete/:subject_id").delete(controller._delete)
 
     app.route("/v1/enrollment/update_image").put(controller.update)
 
@@ -20,7 +18,7 @@ export default (app: Express) =>{
     //app.route("/v1/enrollment/face_match").post(auth.api_key, auth.api_key_scope["FACE_MATCH"], controller.faceMatch)
 
     app.route("/v1/enrollment/:id")
-        .delete(auth.user, controller._delete)
+        .delete(controller._delete)
         .put(auth.user, controller.edit)
         .get(auth.user, controller.getById)
 }
