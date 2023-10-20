@@ -57,7 +57,7 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
     try {
 
         let enr = await EnrollmentDAO.getById(id)
-        enr.photo = Buffer.from(enr.photo).toString('base64')
+        enr.image = Buffer.from(enr.image).toString('base64')
 
 
         if (!enr) return next(new EntityNotFoundError("Enrollment", id))

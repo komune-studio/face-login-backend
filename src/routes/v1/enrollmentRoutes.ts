@@ -19,6 +19,6 @@ export default (app: Express) =>{
 
     app.route("/v1/enrollment/:id")
         .delete(controller._delete)
-        .put(auth.user, controller.edit)
-        .get(auth.user, controller.getById)
+        .put(controller.edit)
+        .get( controller.getById)
 }
