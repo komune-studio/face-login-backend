@@ -231,7 +231,7 @@ export async function _delete(req: Request, res: Response, next: NextFunction) {
         let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${body.subject_id}`, headers, body, 'DELETE')
         if(result.timestamp){
             let enrollment = await enrollmentDAO._delete(body.subject_id)
-            return res.send({result: result})
+            return res.send({success: true, result: result})
         }
 
         return res.send({faulty_delete: true, result: result, message: "Enrollment was not deleted in database!"})
