@@ -7,7 +7,7 @@ export default (app: Express) =>{
 
     app.route("/v1/enrollment/create").post(controller.create)
 
-    app.route("/v1/enrollment/delete/:subject_id").delete(controller._delete)
+    app.route("/v1/enrollment/:subject_id").delete(controller._delete)
 
     app.route("/v1/enrollment/update_image").put(controller.update)
 
