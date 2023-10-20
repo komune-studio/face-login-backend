@@ -18,7 +18,6 @@ export default (app: Express) =>{
     //app.route("/v1/enrollment/face_match").post(auth.api_key, auth.api_key_scope["FACE_MATCH"], controller.faceMatch)
 
     app.route("/v1/enrollment/:id")
-        .delete(controller._delete)
         .put(controller.edit)
         .get( controller.getById)
 }
