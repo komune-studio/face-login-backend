@@ -94,8 +94,13 @@ async function getById(id: string) {
     return rows
 }
 
-async function getAll() {
-    return await model.findMany()
+async function getAll(page : number, limit : number, search : string | undefined) {
+    return await model.findMany({
+        where: {id:  {contains: search, mode: 'insensitive'}},
+        skip: limit * page,
+        take: limit,
+        orderBy: {id: 'asc'}
+    })
 }
 
 

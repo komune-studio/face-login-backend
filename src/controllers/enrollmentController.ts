@@ -57,7 +57,7 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
     try {
 
         let enr = await EnrollmentDAO.getById(id)
-        enr.photo = Buffer.from(enr.photo).toString('base64')
+        enr.image = Buffer.from(enr.image).toString('base64')
 
 
         if (!enr) return next(new EntityNotFoundError("Enrollment", id))
@@ -134,16 +134,6 @@ function paginate(array: [], page_size: number, page_number: number) {
     return array.slice((page_number - 1) * page_size, page_number * page_size);
 }
 
-export async function getAll(req: Request, res: Response, next: NextFunction) {
-    try {
-        let getAll = await EnrollmentDAO.getAll()
-        res.send(getAll)
-    } catch (e) {
-        return next(e);
-    }
-}
-
-
 export async function getWithPagination(req: Request, res: Response, next: NextFunction) {
     try {
         let{limit, page, search} = req.query
@@ -211,10 +201,12 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
 export async function _delete(req: Request, res: Response, next: NextFunction) {
     try{
-        let body = req.params
-        if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+        console.log(req.params)
 
-        let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
+        let {id} = req.params
+        if(!id) return next(new BadRequestError("id is missing!", "SUBJECT_ID_MISSING"))
+
+        let checkIfExist = await EnrollmentDAO.getById(id)
         if(!checkIfExist){
             return res.send({
                 success: false,
@@ -228,9 +220,9 @@ export async function _delete(req: Request, res: Response, next: NextFunction) {
             "accept": "application/json",
             "content-type": 'application/json'
         }
-        let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${body.subject_id}`, headers, body, 'DELETE')
+        let result  = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${id}`, headers, {}, 'DELETE')
         if(result.timestamp){
-            let enrollment = await enrollmentDAO._delete(body.subject_id)
+            let enrollment = await enrollmentDAO._delete(id)
             return res.send({result: result})
         }
 
