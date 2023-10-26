@@ -38,6 +38,9 @@ model enrollments {
 model enrolled_ids {
   id         String   @id
   image      Bytes
+  name       String
+  birth_date DateTime @db.Date
+  phone_num  String?
   created_at DateTime @default(now())
 }
 

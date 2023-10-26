@@ -138,6 +138,8 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
     try {
         let{limit, page, search} = req.query
 
+        if(!limit || !page) return next(new BadRequestError("No pagination param received", "NO_PAGINATION_PARAM"))
+
         // @ts-ignore
         let result = await EnrollmentDAO.getAll(toInteger(page) - 1, toInteger(limit), search);
 
@@ -164,6 +166,8 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         let body = req.body
         if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
         if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+        if(!body.name) return next(new BadRequestError("name is missing!", "NAME_MISSING"))
+        if(!body.birth_date) return next(new BadRequestError("birth_date is missing!", "BIRTH_DATE_MISSING"))
 
         let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
         if(checkIfExist){
@@ -183,8 +187,13 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/enroll', headers, body, 'POST')
 
         if(result.message === "Request Success"){
+            const id = body.subject_id;
+            delete body.subject_id;
+
             let enrollment = await enrollmentDAO.create({
-                id: body.subject_id,
+                ...body,
+                id,
+                birth_date: new Date(body.birth_date),
                 image: new Buffer(body.image, 'base64')
             })
             result.returned = true
@@ -192,7 +201,6 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         }
         return res.send({result: result})
 
-        res.send(result)
     }catch (e) {
         e = new InternalServerError(e)
         next(e)
@@ -201,8 +209,6 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
 export async function _delete(req: Request, res: Response, next: NextFunction) {
     try{
-        console.log(req.params)
-
         let {id} = req.params
         if(!id) return next(new BadRequestError("id is missing!", "SUBJECT_ID_MISSING"))
 
@@ -239,6 +245,8 @@ export async function update(req: Request, res: Response, next: NextFunction) {
 
         if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
         if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+        if(!body.name) return next(new BadRequestError("name is missing!", "NAME_MISSING"))
+        if(!body.birth_date) return next(new BadRequestError("birth_date is missing!", "BIRTH_DATE_MISSING"))
 
         let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
         if(!checkIfExist){
@@ -258,7 +266,7 @@ export async function update(req: Request, res: Response, next: NextFunction) {
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/enroll', headers, body, 'POST')
 
         if(result.message === "Request Success"){
-            let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64')})
+            let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64'), name: body.name, birth_date: new Date(body.birth_date), phone_num: body.phone_num})
             result.returned = true
             return res.send({success: true, result: result})
         }
@@ -288,7 +296,22 @@ export async function face_login(req: Request, res: Response, next: NextFunction
         }
 
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/search', headers, body, 'POST')
-        console.log(result)
+
+        if(result.matches && result.matches.length > 0) {
+            for(const match of result.matches) {
+                // @ts-ignore
+                const face = await enrollmentDAO.getById(match.subject_id);
+
+                if(face) {
+                    // @ts-ignore
+                    match.name = face.name;
+                    // @ts-ignore
+                    match.birth_date = face.birth_date;
+                    // @ts-ignore
+                    match.phone_num = face.phone_num;
+                }
+            }
+        }
 
         res.send({success: result.matches && result.matches.length > 0 ? true : false, result: result})
     }catch (e) {
