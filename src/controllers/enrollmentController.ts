@@ -10,6 +10,7 @@ import hidash from "../utils/hidash";
 import request, {requestWithFile} from "../utils/api.utils";
 import {toInteger} from "lodash";
 import enrollmentDAO from "../daos/EnrollmentDAO";
+import moment from "moment";
 
 
 // let url = `http://${process.env.FREMISN_HOST}:${process.env.FREMISN_PORT}`
@@ -58,6 +59,7 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
 
         let enr = await EnrollmentDAO.getById(id)
         enr.image = Buffer.from(enr.image).toString('base64')
+        enr.ktp_image = Buffer.from(enr.ktp_image).toString('base64')
 
 
         if (!enr) return next(new EntityNotFoundError("Enrollment", id))
@@ -146,8 +148,9 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
         // @ts-ignore
         let countResult = await EnrollmentDAO.getCount(search);
 
-        let obj = {
-            enrollments: result.map((data: { image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>; }) => ({...data, image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')})),
+
+        let obj = {        // @ts-ignore
+            enrollments: result.map((data: { image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>; }) => ({...data, image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,'), ktp_image: Buffer.from(data.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')})),
             limit: toInteger(limit),
             current_page: toInteger(page),
             total_data: countResult._count.id,
@@ -165,9 +168,12 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 
         let body = req.body
         if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
+        if(!body.ktp_image) return next(new BadRequestError("ktp_image is missing!", "KTP_IMAGE_MISSING"))
         if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+        if(!body.email) return next(new BadRequestError("email is missing!", "EMAIL_MISSING"))
         if(!body.name) return next(new BadRequestError("name is missing!", "NAME_MISSING"))
         if(!body.birth_date) return next(new BadRequestError("birth_date is missing!", "BIRTH_DATE_MISSING"))
+        if(!body.phone_num) return next(new BadRequestError("phone_num is missing!", "BIRTH_DATE_MISSING"))
 
         let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
         if(checkIfExist){
@@ -184,6 +190,23 @@ export async function create(req: Request, res: Response, next: NextFunction) {
             "content-type": 'application/json'
         }
 
+
+        let verificationResult  = await sendMessageWithHeaders('https://api.verihubs.com/data-verification/certificate-electronic/verify', headers, {
+            nik: body.subject_id,
+            name: body.name,
+            birth_date: moment(body.birth_date).format('DD-MM-YYYY'),
+            email: body.email,
+            phone: body.phone_num,
+            selfie_photo: body.image,
+            ktp_photo: body.ktp_image
+        }, 'POST')
+
+        if(verificationResult.error_code) {
+            return res.send({success: false, result: verificationResult})
+        } else if (verificationResult.data && verificationResult.data.status === 'not_verified') {
+            return res.send({success: false, result: verificationResult})
+        }
+
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/enroll', headers, body, 'POST')
 
         if(result.message === "Request Success"){
@@ -194,12 +217,13 @@ export async function create(req: Request, res: Response, next: NextFunction) {
                 ...body,
                 id,
                 birth_date: new Date(body.birth_date),
-                image: new Buffer(body.image, 'base64')
+                image: new Buffer(body.image, 'base64'),
+                ktp_image: new Buffer(body.ktp_image, 'base64')
             })
             result.returned = true
             return res.send({success: true, result: result})
         }
-        return res.send({result: result})
+        // return res.send({result: result})
 
     }catch (e) {
         e = new InternalServerError(e)
@@ -244,9 +268,12 @@ export async function update(req: Request, res: Response, next: NextFunction) {
         let body = req.body
 
         if(!body.image) return next(new BadRequestError("image is missing!", "IMAGE_MISSING"))
+        if(!body.ktp_image) return next(new BadRequestError("ktp_image is missing!", "KTP_IMAGE_MISSING"))
         if(!body.subject_id) return next(new BadRequestError("subject_id is missing!", "SUBJECT_ID_MISSING"))
+        if(!body.email) return next(new BadRequestError("email is missing!", "EMAIL_MISSING"))
         if(!body.name) return next(new BadRequestError("name is missing!", "NAME_MISSING"))
         if(!body.birth_date) return next(new BadRequestError("birth_date is missing!", "BIRTH_DATE_MISSING"))
+        if(!body.phone_num) return next(new BadRequestError("phone_num is missing!", "BIRTH_DATE_MISSING"))
 
         let checkIfExist = await EnrollmentDAO.getById(body.subject_id)
         if(!checkIfExist){
@@ -263,10 +290,26 @@ export async function update(req: Request, res: Response, next: NextFunction) {
             "content-type": 'application/json'
         }
 
+        let verificationResult  = await sendMessageWithHeaders('https://api.verihubs.com/data-verification/certificate-electronic/verify', headers, {
+            nik: body.subject_id,
+            name: body.name,
+            birth_date: moment(body.birth_date).format('DD-MM-YYYY'),
+            email: body.email,
+            phone: body.phone_num,
+            selfie_photo: body.image,
+            ktp_photo: body.ktp_image
+        }, 'POST')
+
+        if(verificationResult.error_code) {
+            return res.send({success: false, result: verificationResult})
+        } else if (verificationResult.data && verificationResult.data.status === 'not_verified') {
+            return res.send({success: false, result: verificationResult})
+        }
+
         let result  = await sendMessageWithHeaders('https://api.verihubs.com/v1/face/enroll', headers, body, 'POST')
 
         if(result.message === "Request Success"){
-            let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64'), name: body.name, birth_date: new Date(body.birth_date), phone_num: body.phone_num})
+            let enrollment = await enrollmentDAO.edit(body.subject_id,{image: new Buffer(body.image, 'base64'), ktp_image: new Buffer(body.ktp_image, 'base64'), name: body.name, birth_date: new Date(body.birth_date), phone_num: body.phone_num, email: body.email})
             result.returned = true
             return res.send({success: true, result: result})
         }
@@ -304,9 +347,13 @@ export async function face_login(req: Request, res: Response, next: NextFunction
 
                 if(face) {
                     // @ts-ignore
+                    match.ktp_image = Buffer.from(face.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+                    // @ts-ignore
                     match.name = face.name;
                     // @ts-ignore
                     match.birth_date = face.birth_date;
+                    // @ts-ignore
+                    match.email = face.email;
                     // @ts-ignore
                     match.phone_num = face.phone_num;
                 }
