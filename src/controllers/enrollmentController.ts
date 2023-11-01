@@ -154,7 +154,7 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
                 image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>;
             }) => ({
                 ...data,
-                image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,'),
+                image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,'),  // @ts-ignore
                 ktp_image: Buffer.from(data.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')
             })),
             limit: toInteger(limit),
