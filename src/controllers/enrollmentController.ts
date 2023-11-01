@@ -58,11 +58,14 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
     try {
 
         let enr = await EnrollmentDAO.getById(id)
+
+        if (!enr) return next(new EntityNotFoundError("Enrollment", id))
+
         enr.image = Buffer.from(enr.image).toString('base64')
         enr.ktp_image = Buffer.from(enr.ktp_image).toString('base64')
 
 
-        if (!enr) return next(new EntityNotFoundError("Enrollment", id))
+
         return res.send(hidash.desensitizedFactory(enr))
 
     } catch (e) {
