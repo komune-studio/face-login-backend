@@ -11,7 +11,8 @@ import request, {requestWithFile} from "../utils/api.utils";
 import {toInteger} from "lodash";
 import enrollmentDAO from "../daos/EnrollmentDAO";
 import moment from "moment";
-
+import jwt, {Secret} from "jsonwebtoken";
+const sharp = require('sharp')
 
 // let url = `http://${process.env.FREMISN_HOST}:${process.env.FREMISN_PORT}`
 
@@ -61,10 +62,8 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
 
         if (!enr) return next(new EntityNotFoundError("Enrollment", id))
 
-        enr.image = Buffer.from(enr.image).toString('base64')
-        enr.ktp_image = Buffer.from(enr.ktp_image).toString('base64')
-
-
+        enr.image = (await sharp(Buffer.from(enr.image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        enr.ktp_image = (await sharp(Buffer.from(enr.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
 
         return res.send(hidash.desensitizedFactory(enr))
 
@@ -148,17 +147,22 @@ export async function getWithPagination(req: Request, res: Response, next: NextF
         // @ts-ignore
         let result = await EnrollmentDAO.getAll(toInteger(page) - 1, toInteger(limit), search);
 
+        for(const data of result) {
+            // @ts-ignore
+            data.image = (await sharp(Buffer.from(data.image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+            // @ts-ignore
+            data.ktp_image = (await sharp(Buffer.from(data.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        }
+
         // @ts-ignore
         let countResult = await EnrollmentDAO.getCount(search);
 
 
         let obj = {        // @ts-ignore
-            enrollments: result.map((data: {
-                image: WithImplicitCoercion<ArrayBuffer | SharedArrayBuffer>;
-            }) => ({
+            enrollments: result.map(data => ({
                 ...data,
-                image: Buffer.from(data.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,'),  // @ts-ignore
-                ktp_image: Buffer.from(data.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')
+                image: data.image,
+                ktp_image: data.ktp_image
             })),
             limit: toInteger(limit),
             current_page: toInteger(page),
@@ -366,7 +370,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
 
                 if (face) {
                     // @ts-ignore
-                    match.ktp_image = Buffer.from(face.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+                    match.ktp_image = (await sharp(Buffer.from(match.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
                     // @ts-ignore
                     match.name = face.name;
                     // @ts-ignore
@@ -379,7 +383,22 @@ export async function face_login(req: Request, res: Response, next: NextFunction
             }
         }
 
-        res.send({success: result.matches && result.matches.length > 0 ? true : false, result: result})
+        const output = {success: result.matches && result.matches.length > 0 ? true : false, result: result};
+
+        if(output.success) {
+            const user = result.matches[0];
+
+            // @ts-ignore
+            output.token = jwt.sign({
+                user_id: user.id,
+                name: user.name,
+                birth_date: user.birth_date
+            }, <Secret>process.env.TOKEN_SECRET, {
+                expiresIn: "90d"
+            })
+        }
+
+        res.send(output)
     } catch (e) {
         e = new InternalServerError(e)
         next(e)
