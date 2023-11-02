@@ -370,7 +370,7 @@ export async function face_login(req: Request, res: Response, next: NextFunction
 
                 if (face) {
                     // @ts-ignore
-                    match.ktp_image = (await sharp(Buffer.from(match.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+                    match.ktp_image = (await sharp(Buffer.from(face.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
                     // @ts-ignore
                     match.name = face.name;
                     // @ts-ignore
