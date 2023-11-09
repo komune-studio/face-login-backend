@@ -5,6 +5,7 @@ import cors from 'cors'
 import errorMiddleware from "./middlewares/errorMiddleware";
 import prisma from './services/prisma'
 import enrollmentRoutes from "./routes/v1/enrollmentRoutes";
+import globalRoutes from "./routes/v1/globalRoutes";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(cors());
 app.use('/public',express.static('public'))
 
 enrollmentRoutes(app)
+globalRoutes(app)
 
 app.use(errorMiddleware);
 

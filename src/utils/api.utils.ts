@@ -9,7 +9,7 @@ export default async function request(endpoint : string, method : string, body? 
             "Accept": "application/json",
             ...additionalHeaders
         },
-        body: JSON.stringify(body),
+        body: body ? JSON.stringify(body) : null,
     }
 
     let response = await fetch(endpoint, request);
@@ -18,7 +18,11 @@ export default async function request(endpoint : string, method : string, body? 
         return await response.json();
     }
     else {
-        throw response;
+        try {
+            throw {...await response.json(), status_code: response.status};
+        } catch (e) {
+            throw response
+        }
     }
 }
 
