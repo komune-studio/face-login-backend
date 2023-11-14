@@ -18,10 +18,12 @@ export default async function request(endpoint : string, method : string, body? 
         return await response.json();
     }
     else {
+        const error = await response.json();
+
         try {
-            throw {...await response.json(), status_code: response.status};
+            throw {...error, status_code: response.status}
         } catch (e) {
-            throw response
+            throw error
         }
     }
 }

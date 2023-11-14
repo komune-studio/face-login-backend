@@ -7,21 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
-  id          Int       @id @default(autoincrement())
-  email       String
-  nrp         String
-  name        String
-  role        UserRole  @default(OPERATOR)
-  password    String
-  salt        String
-  photo       Bytes
-  active      Boolean   @default(true)
-  created_at  DateTime  @default(now())
-  modified_at DateTime?
-  deleted_at  DateTime?
-}
-
 model enrollments {
   id                    Int       @id @default(autoincrement())
   identity_number       String
@@ -44,6 +29,16 @@ model enrolled_ids {
   birth_date DateTime @db.Date
   phone_num  String
   created_at DateTime @default(now())
+  skck_requests   skck_requests[]
+}
+
+model skck_requests {
+  id         Int      @id @default(autoincrement())
+  user_id    String
+  progress   SKCKProgress  @default(IN_PROGRESS)
+  created_at DateTime @default(now())
+
+  user enrolled_ids @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "api_key_scopes_ibfk_1")
 }
 
 model api_hit_logs {
@@ -77,9 +72,8 @@ model api_key_scopes {
   api_key api_keys @relation(fields: [api_key_id], references: [id], onUpdate: Restrict, map: "api_key_scopes_ibfk_1")
 }
 
-enum UserRole {
-  ADMIN
-  OPERATOR
+enum SKCKProgress {
+  IN_PROGRESS
 }
 
 enum Gender {

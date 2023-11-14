@@ -78,7 +78,6 @@ export class InternalServerError extends RequestError {
             processedErr.stack = processedErr.stack.split("\n")
         }
         this.detail = processedErr
-        console.error(err)
     }
 }
 

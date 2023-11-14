@@ -6,6 +6,7 @@ import errorMiddleware from "./middlewares/errorMiddleware";
 import prisma from './services/prisma'
 import enrollmentRoutes from "./routes/v1/enrollmentRoutes";
 import globalRoutes from "./routes/v1/globalRoutes";
+import skckRequestRoutes from "./routes/v1/skckRequestRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/public',express.static('public'))
 
 enrollmentRoutes(app)
 globalRoutes(app)
+skckRequestRoutes(app)
 
 app.use(errorMiddleware);
 

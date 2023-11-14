@@ -369,6 +369,8 @@ export async function face_login(req: Request, res: Response, next: NextFunction
                 const face = await enrollmentDAO.getById(match.subject_id);
 
                 if (face) {
+                    match.id = face.id;
+
                     // @ts-ignore
                     match.ktp_image = (await sharp(Buffer.from(face.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
                     // @ts-ignore
