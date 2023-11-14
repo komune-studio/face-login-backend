@@ -24,6 +24,8 @@ model enrolled_ids {
   id         String   @id
   image      Bytes
   ktp_image  Bytes
+  passport_image  Bytes?
+  driving_license_image  Bytes?
   email      String
   name       String
   birth_date DateTime @db.Date

@@ -65,6 +65,14 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
         enr.image = (await sharp(Buffer.from(enr.image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
         enr.ktp_image = (await sharp(Buffer.from(enr.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
 
+        if(enr.passport_image) {
+            enr.passport_image = (await sharp(Buffer.from(enr.passport_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        }
+
+        if(enr.driving_license_image) {
+            enr.driving_license_image = (await sharp(Buffer.from(enr.driving_license_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        }
+
         return res.send(hidash.desensitizedFactory(enr))
 
     } catch (e) {
@@ -329,6 +337,8 @@ export async function update(req: Request, res: Response, next: NextFunction) {
             let enrollment = await enrollmentDAO.edit(body.subject_id, {
                 image: new Buffer(body.image, 'base64'),
                 ktp_image: new Buffer(body.ktp_image, 'base64'),
+                passport_image: body.passport_image ? new Buffer(body.passport_image, 'base64') : null,
+                driving_license_image: body.driving_license_image ? new Buffer(body.driving_license_image, 'base64') : null,
                 name: body.name,
                 birth_date: new Date(body.birth_date),
                 phone_num: body.phone_num,
