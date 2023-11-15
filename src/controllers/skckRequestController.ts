@@ -38,7 +38,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
         }, headers);
 
         if(result.similarity_status) {
-            await SkckRequestDAO.create({user_id: id})
+            await SkckRequestDAO.create({user_id: id, reason: req.body.reason})
         }
 
         return res.send({success: result.similarity_status, result})

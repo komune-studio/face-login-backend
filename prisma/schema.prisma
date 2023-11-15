@@ -37,6 +37,7 @@ model enrolled_ids {
 model skck_requests {
   id         Int      @id @default(autoincrement())
   user_id    String
+  reason     String?
   progress   SKCKProgress  @default(IN_PROGRESS)
   created_at DateTime @default(now())
 
