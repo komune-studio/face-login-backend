@@ -62,15 +62,19 @@ export async function getById(req: Request, res: Response, next: NextFunction) {
 
         if (!enr) return next(new EntityNotFoundError("Enrollment", id))
 
-        enr.image = (await sharp(Buffer.from(enr.image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
-        enr.ktp_image = (await sharp(Buffer.from(enr.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        // enr.image = (await sharp(Buffer.from(enr.image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        enr.image = Buffer.from(enr.image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        // enr.ktp_image = (await sharp(Buffer.from(enr.ktp_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+        enr.ktp_image = Buffer.from(enr.ktp_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')
 
         if(enr.passport_image) {
-            enr.passport_image = (await sharp(Buffer.from(enr.passport_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+            // enr.passport_image = (await sharp(Buffer.from(enr.passport_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+            enr.passport_image = Buffer.from(enr.passport_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
         }
 
         if(enr.driving_license_image) {
-            enr.driving_license_image = (await sharp(Buffer.from(enr.driving_license_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+            // enr.driving_license_image = (await sharp(Buffer.from(enr.driving_license_image)).resize(400).jpeg({quality: 100}).toBuffer()).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,');
+            enr.driving_license_image = Buffer.from(enr.driving_license_image).toString('base64').replace('dataimage', 'data:image').replace('base64', ';base64,')
         }
 
         return res.send(hidash.desensitizedFactory(enr))
