@@ -6,12 +6,14 @@ import {
     InternalServerError
 } from "../errors/RequestErrorCollection";
 import EnrollmentDAO from "../daos/EnrollmentDAO";
+import SkckRequestDAO from "../daos/SkckRequestDAO";
 import hidash from "../utils/hidash";
 import request, {requestWithFile} from "../utils/api.utils";
 import {toInteger} from "lodash";
 import enrollmentDAO from "../daos/EnrollmentDAO";
 import moment from "moment";
 import jwt, {Secret} from "jsonwebtoken";
+import skckRequestDAO from "../daos/SkckRequestDAO";
 const sharp = require('sharp')
 
 // let url = `http://${process.env.FREMISN_HOST}:${process.env.FREMISN_PORT}`
@@ -278,6 +280,7 @@ export async function _delete(req: Request, res: Response, next: NextFunction) {
         }
         let result = await sendMessageWithHeaders(`https://api.verihubs.com/v1/face/enroll?subject_id=${id}`, headers, {}, 'DELETE')
         if (result.timestamp) {
+            await skckRequestDAO._delete(id)
             let enrollment = await enrollmentDAO._delete(id)
             return res.send({result: result})
         }
